@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/luxpo/mxshop/rpc101/2.rpc/grpc/stub"
+	"github.com/luxpo/mxshop/rpc101/codec/grpc/stub"
 )
 
 func main() {

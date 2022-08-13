@@ -2,6 +2,14 @@ syntax = "proto3";
 
 option go_package = "./helloworld";
 
+service Hello {
+    rpc Hello(HelloRequest) returns (Response);
+}
+
 message HelloRequest {
     string name = 1;
+}
+
+message Response {
+    string reply = 1;
 }
