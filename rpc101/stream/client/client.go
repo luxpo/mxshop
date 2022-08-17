@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/luxpo/mxshop/rpc101/stream/proto"
@@ -40,4 +41,25 @@ func main() {
 		time.Sleep(time.Second)
 	}
 
+	// 双向流模式
+	allStream, _ := c.AllStream(context.Background())
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for {
+			data, _ := allStream.Recv()
+			log.Printf("recv from server: %s", data.Data)
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for {
+			allStream.Send(&proto.StreamReqData{
+				Data: "I'm client.",
+			})
+			time.Sleep(time.Second)
+		}
+	}()
+	wg.Wait()
 }

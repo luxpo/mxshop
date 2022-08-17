@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/luxpo/mxshop/rpc101/stream/proto"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type server struct {
@@ -39,9 +38,29 @@ func (s *server) PutStream(req proto.Greeter_PutStreamServer) error {
 	return nil
 }
 
-func (s *server) AllStream(proto.Greeter_AllStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method AllStream not implemented")
+func (s *server) AllStream(greeter proto.Greeter_AllStreamServer) error {
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for {
+			data, _ := greeter.Recv()
+			log.Printf("recv from client: %s\n", data.Data)
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for {
+			greeter.Send(&proto.StreamRespData{
+				Data: "I'm server.",
+			})
+			time.Sleep(time.Second)
+		}
+	}()
+	wg.Wait()
+	return nil
 }
+
 func main() {
 	lis, err := net.Listen("tcp", ":50052")
 	if err != nil {
