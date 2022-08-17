@@ -17,7 +17,7 @@ type server struct {
 }
 
 func (s *server) GetStream(req *proto.StreamReqData, resp proto.Greeter_GetStreamServer) error {
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 3; i++ {
 		resp.Send(&proto.StreamRespData{
 			Data: fmt.Sprintf("Hi %s, date is %s", req.Data, time.Now().Format(time.RFC3339)),
 		})
@@ -26,9 +26,19 @@ func (s *server) GetStream(req *proto.StreamReqData, resp proto.Greeter_GetStrea
 
 	return nil
 }
-func (s *server) PutStream(proto.Greeter_PutStreamServer) error {
-	return status.Errorf(codes.Unimplemented, "method PutStream not implemented")
+
+func (s *server) PutStream(req proto.Greeter_PutStreamServer) error {
+	for {
+		if reqData, err := req.Recv(); err != nil {
+			log.Println(err)
+			break
+		} else {
+			log.Println(reqData.Data)
+		}
+	}
+	return nil
 }
+
 func (s *server) AllStream(proto.Greeter_AllStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method AllStream not implemented")
 }
